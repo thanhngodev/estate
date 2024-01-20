@@ -23,7 +23,13 @@ const OAuth = () => {
                     avatar: result.user.photoURL
                 })
             });
+
             const data = await res.json();
+            if (data.success === false) {
+                dispatch(signInFailure(data['message']));
+                return;
+            }
+
             dispatch(signInSuccess(data));
             navigate('/');
         } catch (error) {
