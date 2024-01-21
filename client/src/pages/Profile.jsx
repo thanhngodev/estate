@@ -33,7 +33,7 @@ const Profile = () => {
   // request.resource.contentType.matches('image/*')
 
   useEffect(() => {
-    if(file) {
+    if (file) {
       handleFileUpload(file);
     }
   }, [file]);
@@ -65,18 +65,18 @@ const Profile = () => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
-  const handleSubmit = async (e) => { 
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       dispatch(updateUserStart());
       const res = await fetch('/api/user/update/' + currentUser['_id'], {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       })
 
       const data = await res.json();
-      if(data.success === false) {
+      if (data.success === false) {
         dispatch(updateUserFailure(data.message));
         return;
       }
@@ -95,7 +95,7 @@ const Profile = () => {
         method: "DELETE",
       });
       const data = await res.json();
-      if(data.success === false) { 
+      if (data.success === false) {
         dispatch(deleteUserFailure(data.message));
         return;
       }
@@ -110,7 +110,7 @@ const Profile = () => {
       dispatch(signOutUserStart());
       const res = await fetch('/api/auth/signout');
       const data = await res.json();
-      if(data.success === false) { 
+      if (data.success === false) {
         dispatch(deleteUserFailure(data.message));
         return;
       }
@@ -120,13 +120,42 @@ const Profile = () => {
     }
   }
 
+  const handleShowListings = async () => {
+    try {
+      setShowListingsError(false);
+      const res = await fetch(`/api/user/listings/${currentUser._id}`);
+      const data = await res.json();
+      if (data.success === false) {
+        setFileUploadError(true);
+        return;
+      }
+      setUserListings(data);
+    } catch (error) {
+      setShowListingsError(true);
+    }
+  }
+
+  const handleListingDelete = async (listingId) => {
+    try {
+      const res = await fetch(`/api/listing/delete/${listingId}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        console.log(data.message);
+      }
+      setUserListings((prev) => prev.filter((listing) => listing._id !== listingId));
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
   return (
     <div className="p-3 max-w-lg mx-auto">
       <h1 className="text-3xl font-semibold text-center">
         Profile
       </h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4" >
-        <input 
+        <input
           onChange={(e) => setFile(e.target.files[0])}
           type="file"
           ref={fileRef}
@@ -197,6 +226,51 @@ const Profile = () => {
       <p className='text-green-700 mt-5'>
         {updateSuccess ? 'User is updated successfully!' : ''}
       </p>
+      {/* Listings */}
+      <button onClick={handleShowListings} className='text-green-700 w-full'>
+        Show Listings
+      </button>
+      <p className='text-red-700 mt-5'>
+        {showListingsError ? 'Error showing listings' : ''}
+      </p>
+      {
+        userListings && userListings.length > 0 && (
+          <div className="flex flex-col gap-4" >
+            <h1 className="text-center mt-7 text-2xl font-semibold" >
+              Your Listings
+            </h1>
+            {
+              userListings.map((item) => (
+                <div key={item._id} className="border rounded-lg p-3 flex justify-between items-center gap-4 " >
+                  <Link to={`/listing/${item._id}`}>
+                    <img
+                      src={item.imageUrls[0]}
+                      alt="listing cover"
+                      className="h-16 w-16 object-contain"
+                    />
+                  </Link>
+                  <Link
+                    className="text-slate-700 font-semibold hover:underline truncate flex-1"
+                    to={`/listing/${item._id}`}
+                  >
+                    <p>{item.name || ''}</p>
+                  </Link>
+                  <div className="flex flex-col items-center" >
+                    <button onClick={() => handleListingDelete(item._id)} className="text-red-700 uppercase" >
+                      Delete
+                    </button>
+                    <Link to={`/update-listing/${item._id}`}>
+                      <button className="text-green-700 uppercase ">
+                        Edit
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+              ))
+            }
+          </div>
+        )
+      }
     </div>
   )
 }
