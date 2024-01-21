@@ -46,6 +46,7 @@ const CreateListing = () => {
                 })
                 setImageUploadError(false);
                 setUploading(false);
+                setFiles([]);
             }).catch((error) => {
                 setImageUploadError('Image upload failed (2MB/Image)');
                 setUploading(false);
@@ -90,25 +91,16 @@ const CreateListing = () => {
 
     const handleChange = (e) => {
         if (e.target.id === 'sale' || e.target.id === 'rent') {
-            setFormData({
-                ...formData,
-                type: e.target.id
-            })
-        }
-
-        if (e.target.id === 'parking' || e.target.id === 'furnished' || e.target.id === 'offer') {
-            setFormData({
-                formData,
-                [e.target.id]: e.target.checked
-            })
-        }
-
-        if (e.target.type === 'number' || e.target.type === 'text' || e.target.type === 'textarea') {
-            setFormData({
-                formData,
-                [e.target.id]: e.target.value
-            })
-        }
+            setFormData({...formData, type: e.target.id});
+          }
+      
+          if (e.target.id === 'parking' || e.target.id === 'furnished' || e.target.id === 'offer') {
+            setFormData({...formData, [e.target.id]: e.target.checked});
+          }
+      
+          if (e.target.type === 'number' || e.target.type === 'text' || e.target.type === 'textarea') {
+            setFormData({...formData, [e.target.id]: e.target.value});
+          }
     }
 
     const handleSubmit = async (e) => {
@@ -139,7 +131,7 @@ const CreateListing = () => {
     return (
         <main className='p-3 max-w-4xl mx-auto'>
             <h1 className='text-3xl font-semibold text-center my-7'>
-                Create a listing
+                Create a Listing
             </h1>
             <form onSubmit={handleSubmit} className='flex flex-col sm:flex-row gap-4'>
                 <div className='flex flex-col gap-4 flex-1'>
@@ -318,7 +310,7 @@ const CreateListing = () => {
                     <p className='text-red-700 text-sm'>
                         {imageUploadError && imageUploadError}
                     </p>
-                    {formData.imageUrls.length > 0 && formData.imageUrls.map((url, index) => (
+                    {formData.imageUrls && formData.imageUrls.length > 0 && formData.imageUrls.map((url, index) => (
                         <div key={url} className='flex justify-between p-3 border items-center'>
                             <img
                                 src={url}
